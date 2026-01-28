@@ -11,13 +11,13 @@ if "GEMINI_API_KEY" in st.secrets:
 else:
     st.error("Bitte 'GEMINI_API_KEY' in den Secrets hinterlegen!")
 
-model = genai.GenerativeModel('gemini-1.5-flash')
+model = genai.GenerativeModel('gemini-2.5-flash-lite')
 
 # --- NEU: INITIALISIERUNG DES SPEICHERS ---
 if 'alle_kontakte' not in st.session_state:
     st.session_state.alle_kontakte = []
 
-st.title("📇 Multi-Scan Visitenkarten-Sammler")
+st.title("📇 Visitenkarten Scanner")
 
 uploaded_file = st.file_uploader("Visitenkarte hochladen", type=['jpg', 'png', 'jpeg'])
 
@@ -27,8 +27,12 @@ if uploaded_file:
     
     if st.button("Karte scannen und zur Liste hinzufügen"):
         with st.spinner('KI analysiert...'):
-            prompt = """Extrahiere: Firma, Name, Vorname, Abteilung, Adresse, Telefon, Mobiltelefon, Email, URL. 
-                        Antworte NUR als JSON-Objekt."""
+            prompt = """
+            Extrahiere die Daten von dieser Visitenkarte. 
+            Gib mir NUR ein JSON-Objekt mit genau diesen Schlüsseln zurück: 
+            Firma, Name, Vorname, Abteilung, Adresse, Telefon, Mobiltelefon, Email, URL.
+            Falls ein Feld nicht auf der Karte steht, setze den Wert auf null."""
+            
             try:
                 response = model.generate_content([prompt, image])
                 clean_json = response.text.replace('```json', '').replace('```', '').strip()
