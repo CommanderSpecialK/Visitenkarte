@@ -31,8 +31,8 @@ if st.button("Daten extrahiert"):
         
 try:
             # Jetzt existiert 'response' und wir können darauf zugreifen
-            clean_json = response.text.replace('```json', '').replace('```', '').strip()
-            data = json.loads(clean_json)
+    clean_json = response.text.replace('```json', '').replace('```', '').strip()
+    data = json.loads(clean_json)
 
     # Wenn ein Feld fehlt, wird einfach ein leerer Text "" eingefügt.
     spalten = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
