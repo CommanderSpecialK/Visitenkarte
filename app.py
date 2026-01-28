@@ -67,45 +67,45 @@ if uploaded_file:
                 st.write("KI-Antwort zur Fehlersuche:", response.text if 'response' in locals() else "Keine Antwort")
 
 # Anzeige der gesammelten Liste
-# --- ANZEIGE UND EINZELNES LÖSCHEN ---
+# --- INTERAKTIVER EDITOR ---
 if st.session_state.alle_kontakte:
     st.divider()
-    st.subheader(f"Gesammelte Daten ({len(st.session_state.alle_kontakte)} Einträge)")
+    st.subheader(f"Daten bearbeiten & kontrollieren ({len(st.session_state.alle_kontakte)} Einträge)")
+    st.info("Du kannst direkt in die Zellen klicken, um Texte zu korrigieren.")
 
-    # Wir erstellen Spaltenüberschriften nur für die Anzeige im Web
+    # 1. Spaltenüberschriften definieren
     spalten_namen = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
     
-    # Wir loopen durch die Liste und erstellen für jede Zeile einen Lösch-Button
-    for i, eintrag in enumerate(st.session_state.alle_kontakte):
-        cols = st.columns([8, 1]) # Textspalte breit, Buttonspalte schmal
-        with cols[0]:
-            # Zeige die Daten kompakt an
-            st.write(f"**{i+1}.** {eintrag[0]} | {eintrag[1]} {eintrag[2]} | {eintrag[7]}")
-        with cols[1]:
-            # Der Button nutzt den Index 'i' zum Löschen
-            if st.button("🗑️", key=f"delete_{i}"):
-                st.session_state.alle_kontakte.pop(i)
-                st.rerun()
+    # 2. DataFrame erstellen
+    df_editor = pd.DataFrame(st.session_state.alle_kontakte, columns=spalten_namen)
+    
+    # 3. Den interaktiven Editor anzeigen
+    # num_rows="dynamic" erlaubt es dir, Zeilen direkt im Editor zu löschen (Markieren + Entf)
+    editiertes_df = st.data_editor(df_editor, num_rows="dynamic", use_container_width=True)
+    
+    # 4. Den Speicher (session_state) mit den Änderungen aus dem Editor synchronisieren
+    st.session_state.alle_kontakte = editiertes_df.values.tolist()
 
     st.divider()
-
-    # Excel Export (wie gehabt, nimmt alle aktuellen Daten)
-    df_gesamt = pd.DataFrame(st.session_state.alle_kontakte)
     
+    # --- AKTIONEN ---
     col1, col2 = st.columns(2)
+    
     with col1:
         if st.button("Gesamte Liste leeren"):
             st.session_state.alle_kontakte = []
             st.rerun()
             
     with col2:
+        # Excel Export (nimmt die editierten Daten!)
         buffer = io.BytesIO()
         with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-            df_gesamt.to_excel(writer, index=False, header=False)
+            # Hier nutzen wir das editierte_df
+            editiertes_df.to_excel(writer, index=False, header=False)
         
         st.download_button(
             label="Als Excel herunterladen",
             data=buffer.getvalue(),
-            file_name="visitenkarten_sammlung.xlsx",
+            file_name="visitenkarten_korrigiert.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
