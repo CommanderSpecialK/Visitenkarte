@@ -1,6 +1,6 @@
 [theme]
 primaryColor = "#FF4B4B"          # Farbe von Buttons und Highlights
 backgroundColor = "#005C84"       # Haupt-Hintergrundfarbe
-secondaryBackgroundColor = "#005C84" # Farbe der Sidebar und Eingabefelder
+secondaryBackgroundColor = "#293133" # Farbe der Sidebar und Eingabefelder
 textColor = "#FFFFFF"             # Schriftfarbe
 font = "arial"               # Schriftart
