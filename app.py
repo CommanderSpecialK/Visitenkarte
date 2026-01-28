@@ -19,25 +19,21 @@ if uploaded_file:
     image = Image.open(uploaded_file)
     st.image(image, caption='Hochgeladenes Bild', use_container_width=True)
     
-    if st.button("Daten extrahieren"):
-        with st.spinner('KI analysiert das Bild...'):
-            # Prompt für die KI
-            prompt = """Extrahiere die Daten von dieser Visitenkarte. 
+if st.button("Daten extrahiert"):
+    with st.spinner('KI analysiert das Bild...'):
+        prompt = """Extrahiere die Daten von dieser Visitenkarte. 
             Gib mir NUR ein JSON-Objekt mit diesen Feldern zurück: 
             Firma, Name, Vorname, Abteilung, Adresse, Telefon, Mobiltelefon, Email, URL.
             Falls ein Feld fehlt, schreibe null."""
-            
-            # Bild an Gemini senden
-            response = model.generate_content([prompt, image])
-            
+        
+        # HIER wird die Variable 'response' erstellt:
+        response = model.generate_content([prompt, image])
+        
+        try:
+            # Jetzt existiert 'response' und wir können darauf zugreifen
+            clean_json = response.text.replace('```json', '').replace('```', '').strip()
+            data = json.loads(clean_json)
 
-try:
-    # 1. KI-Text säubern und in ein Python-Objekt (Dictionary) umwandeln
-    clean_json = response.text.replace('```json', '').replace('```', '').strip()
-    data = json.loads(clean_json)
-    
-    # 2. HIER kommt das data.get ins Spiel: 
-    # Wir erstellen eine Liste mit den Werten in EXAKT dieser Reihenfolge
     # Wenn ein Feld fehlt, wird einfach ein leerer Text "" eingefügt.
     spalten = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
     sortierte_werte = [data.get(col, "") for col in spalten]
