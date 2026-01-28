@@ -94,7 +94,7 @@ if st.session_state.alle_kontakte:
     <style>
     /* Hintergrund für den Data Editor Bereich */
     div[data-testid="stDataEditor"] {
-        background-color: #00000; /* Hier deine Wunschfarbe */
+        background-color: #293133; /* Hier deine Wunschfarbe */
         padding: 10px;
         border-radius: 5px;
     }
