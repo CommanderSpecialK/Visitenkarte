@@ -12,7 +12,7 @@ if "GEMINI_API_KEY" in st.secrets:
 else:
     st.error("Bitte hinterlege den 'GEMINI_API_KEY' in den Streamlit Secrets!")
 
-model = genai.GenerativeModel('gemini-1.5-flash')
+model = genai.GenerativeModel('gemini-2.5-flash-lite')
 
 st.title("📇 KI Visitenkarten-Scanner")
 st.info("Lade ein Bild hoch, um die Daten direkt in eine Excel-Struktur zu extrahieren.")
