@@ -46,7 +46,7 @@ try:
     # Tabelle zur Kontrolle in der App anzeigen (hier noch mit Spaltennamen)
     st.table(df)
 
-import io
+    import io
     # EXPORT VORBEREITEN
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
