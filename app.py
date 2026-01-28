@@ -23,38 +23,48 @@ if uploaded_file:
             # Prompt für die KI
             prompt = """Extrahiere die Daten von dieser Visitenkarte. 
             Gib mir NUR ein JSON-Objekt mit diesen Feldern zurück: 
-            Name, Firma, Position, Email, Telefon, Website.
+            Firma, Name, Vorname, Abteilung, Adresse, Telefon, Mobiltelefon, Email, URL.
             Falls ein Feld fehlt, schreibe null."""
             
             # Bild an Gemini senden
             response = model.generate_content([prompt, image])
             
-            try:
-                # Säuberung des Outputs (entfernt ```json ... ```)
-                clean_json = response.text.replace('```json', '').replace('```', '').strip()
-                data = json.loads(clean_json)
-                
-                # In Tabelle anzeigen
-                df = pd.DataFrame([data])
-                st.success("Daten erfolgreich extrahiert!")
-                st.table(df)
-                
-                # Excel/CSV Download
+# 1. Definieren der festen Spaltenreihenfolge
+COLUMNS_ORDER = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
+
+try:
+    # Säubern der Ausgabe
+    clean_json = response.text.replace('```json', '').replace('```', '').strip()
+    data = json.loads(clean_json)
+    
+    # Sicherstellen, dass alle Felder vorhanden sind (sonst leerer Text "")
+    ordered_data = {col: data.get(col, "") for col in COLUMNS_ORDER}
+    
+    # DataFrame mit fester Reihenfolge erstellen
+    df = pd.DataFrame([ordered_data])
+    
+    # Tabelle zur Kontrolle in der App anzeigen (hier noch mit Spaltennamen)
+    st.table(df)
+
 import io
+    # EXPORT VORBEREITEN
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+        # header=False entfernt die Überschriften im Excel-File
+        # index=False entfernt die Zeilennummerierung
+        df.to_excel(writer, index=False, header=False, sheet_name='Kontakt')
 
-# Erstelle eine Excel-Datei im Arbeitsspeicher
-buffer = io.BytesIO()
-with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-    df.to_excel(writer, index=False, sheet_name='Kontakt')
-
-st.download_button(
-    label="Als Excel herunterladen",
-    data=buffer.getvalue(),
-    file_name="visitenkarte.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
+    st.download_button(
+        label="Als Excel herunterladen (nur Daten)",
+        data=buffer.getvalue(),
+        file_name="visitenkarte.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+                
+except Exception as e:
+    st.error("Fehler beim Sortieren der Daten.")
 
                 
-            except Exception as e:
-                st.error("Fehler beim Verarbeiten der KI-Antwort. Probiere es nochmal.")
-                st.write(response.text)
+except Exception as e:
+    st.error("Fehler beim Verarbeiten der KI-Antwort. Probiere es nochmal.")
+    st.write(response.text)
