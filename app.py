@@ -106,6 +106,6 @@ if st.session_state.alle_kontakte:
         st.download_button(
             label="Als Excel herunterladen",
             data=buffer.getvalue(),
-            file_name="visitenkarten_korrigiert.xlsx",
+            file_name="visitenkarten_sammlung.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
