@@ -20,6 +20,12 @@ if 'total_tokens' not in st.session_state:
 
 st.title("📇 Pro Visitenkarten-Scanner")
 
+with st.sidebar:
+    
+    st.image("WFL_OS.JPG", width=200)
+    
+    st.divider() # Trennlinie unter dem Logo
+
 # 2. Dateiupload
 uploaded_file = st.file_uploader("Bild hochladen", type=['jpg', 'png', 'jpeg'])
 
