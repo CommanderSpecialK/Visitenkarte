@@ -89,7 +89,18 @@ if st.session_state.alle_kontakte:
     
     spalten_namen = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
     df_editor = pd.DataFrame(st.session_state.alle_kontakte, columns=spalten_namen)
-    
+
+    st.markdown("""
+    <style>
+    /* Hintergrund für den Data Editor Bereich */
+    div[data-testid="stDataEditor"] {
+        background-color: #00000; /* Hier deine Wunschfarbe */
+        padding: 10px;
+        border-radius: 5px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     # Editor anzeigen
     editiertes_df = st.data_editor(df_editor, num_rows="dynamic", use_container_width=True)
     st.session_state.alle_kontakte = editiertes_df.values.tolist()
