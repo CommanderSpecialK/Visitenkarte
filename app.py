@@ -63,7 +63,7 @@ if uploaded_file:
                     st.session_state.alle_kontakte.append(sortierte_werte)
                 
                 status.update(label="✅ Analyse erfolgreich!", state="complete", expanded=False)
-                st.balloons() # Kleiner Erfolgseffekt
+                #st.balloons() # Kleiner Erfolgseffekt
                 
             except Exception as e:
                 status.update(label="❌ Fehler aufgetreten", state="error")
