@@ -29,7 +29,7 @@ if st.button("Daten extrahiert"):
         # HIER wird die Variable 'response' erstellt:
         response = model.generate_content([prompt, image])
         
-        try:
+try:
             # Jetzt existiert 'response' und wir können darauf zugreifen
             clean_json = response.text.replace('```json', '').replace('```', '').strip()
             data = json.loads(clean_json)
