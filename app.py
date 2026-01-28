@@ -22,7 +22,7 @@ st.title("📇 Pro Visitenkarten-Scanner")
 
 with st.sidebar:
     
-    st.image("WFL_OS.JPG", width=200)
+    st.image("WFL_OS.JPG", width=100)
     
     st.divider() # Trennlinie unter dem Logo
 
