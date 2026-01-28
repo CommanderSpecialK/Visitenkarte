@@ -27,12 +27,14 @@ if uploaded_file:
     
     if st.button("Karte scannen und zur Liste hinzufügen"):
         with st.spinner('KI analysiert...'):
-            prompt = """ Analysiere dieses Bild. Es enthält eine oder mehrere Visitenkarten.
-            Extrahiere die Daten von JEDER einzelnen Karte.
-            Gib mir eine LISTE von JSON-Objekten zurück (ein Objekt pro Karte).
-            Jedes Objekt muss diese Schlüssel haben: 
-            Firma, Name, Vorname, Abteilung, Adresse, Telefon, Mobiltelefon, Email, URL.
-            Falls ein Feld nicht auf der Karte steht, setze den Wert auf null."""
+            prompt = """
+Analysiere dieses Bild. Es enthält eine oder mehrere Visitenkarten.
+Extrahiere die Daten von JEDER einzelnen Karte.
+Gib mir eine LISTE von JSON-Objekten zurück (ein Objekt pro Karte).
+Jedes Objekt muss diese Schlüssel haben: 
+Firma, Name, Vorname, Abteilung, Adresse, Telefon, Mobiltelefon, Email, URL.
+Falls ein Feld nicht auf der Karte steht, setze den Wert auf null.
+"""
             
 try:
     response = model.generate_content([prompt, image])
