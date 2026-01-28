@@ -18,13 +18,13 @@ if 'alle_kontakte' not in st.session_state:
 if 'total_tokens' not in st.session_state:
     st.session_state.total_tokens = 0
 
-col1, col2 = st.columns([1, 4]) # 1 Teil für Logo, 4 Teile für Text
-
-with col1:
-    st.image("WFL_OS.JPG", width=30) # Breite anpassen, damit es zum Text passt
+# Spalten helfen beim Zentrieren (links leer, mitte Logo, rechts leer)
+col1, col2, col3 = st.columns([1, 2, 1]) 
 
 with col2:
-    st.title("Pro Visitenkarten Scanner")
+    st.image("WFL_OS.JPG", use_container_width=True)
+
+st.title("Pro Visitenkarten-Scanner")
 
 with st.sidebar:
     
