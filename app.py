@@ -19,7 +19,7 @@ if 'total_tokens' not in st.session_state:
     st.session_state.total_tokens = 0
 
 # Spalten helfen beim Zentrieren (links leer, mitte Logo, rechts leer)
-col1, col2, col3 = st.columns([1, 2, 1]) 
+col1, col2, col3 = st.columns([2, 1, 2]) 
 
 with col2:
     st.image("WFL_OS.JPG", use_container_width=True)
