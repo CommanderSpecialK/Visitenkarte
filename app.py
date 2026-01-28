@@ -2,6 +2,8 @@ import streamlit as st
 import easyocr
 import pandas as pd
 from PIL import Image
+import numpy as np
+
 
 st.title("Visitenkarten Scanner")
 
@@ -10,10 +12,16 @@ uploaded_file = st.file_uploader("Bild hochladen", type=['jpg', 'png', 'jpeg'])
 
 if uploaded_file:
     image = Image.open(uploaded_file)
-    st.image(image, caption='Hochgeladenes Bild', use_container_width=True)
+    img_array = np.array(image) # Bild umwandeln
+    result = reader.readtext(img_array, detail=0)
     
     # Text extrahieren
-    reader = easyocr.Reader(['de', 'en'])
+    @st.cache_resource
+def load_reader():
+    # Lädt das Modell nur einmal und speichert es im Zwischenspeicher
+    return easyocr.Reader(['de', 'en'], gpu=False)
+
+    reader = load_reader()
     result = reader.readtext(image, detail=0)
     
     # Daten in einer Tabelle anzeigen
