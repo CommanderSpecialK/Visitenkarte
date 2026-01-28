@@ -10,7 +10,7 @@ uploaded_file = st.file_uploader("Bild hochladen", type=['jpg', 'png', 'jpeg'])
 
 if uploaded_file:
     image = Image.open(uploaded_file)
-    st.image(image, caption='Hochgeladenes Bild', use_column_width=True)
+    st.image(image, caption='Hochgeladenes Bild', use_container_width=True)
     
     # Text extrahieren
     reader = easyocr.Reader(['de', 'en'])
