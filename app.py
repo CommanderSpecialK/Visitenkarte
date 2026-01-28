@@ -40,8 +40,20 @@ if uploaded_file:
                 st.table(df)
                 
                 # Excel/CSV Download
-                csv = df.to_csv(index=False).encode('utf-8')
-                st.download_button("Als CSV speichern", csv, "kontakt.csv", "text/csv")
+import io
+
+# Erstelle eine Excel-Datei im Arbeitsspeicher
+buffer = io.BytesIO()
+with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+    df.to_excel(writer, index=False, sheet_name='Kontakt')
+
+st.download_button(
+    label="Als Excel herunterladen",
+    data=buffer.getvalue(),
+    file_name="visitenkarte.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+
                 
             except Exception as e:
                 st.error("Fehler beim Verarbeiten der KI-Antwort. Probiere es nochmal.")
