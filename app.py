@@ -3,6 +3,7 @@ import google.generativeai as genai
 from PIL import Image
 import pandas as pd
 import json
+import io
 
 # Konfiguriere Gemini
 # Statt api_key="DEIN_KEY" nutzt du das Secrets-Objekt von Streamlit
@@ -29,42 +30,37 @@ if uploaded_file:
             # Bild an Gemini senden
             response = model.generate_content([prompt, image])
             
-# 1. Definieren der festen Spaltenreihenfolge
-ordered_data = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
 
 try:
-    # Säubern der Ausgabe
+    # 1. KI-Text säubern und in ein Python-Objekt (Dictionary) umwandeln
     clean_json = response.text.replace('```json', '').replace('```', '').strip()
     data = json.loads(clean_json)
     
-    # Sicherstellen, dass alle Felder vorhanden sind (sonst leerer Text "")
-    ordered_data = {col: data.get(col, "") for col in COLUMNS_ORDER}
+    # 2. HIER kommt das data.get ins Spiel: 
+    # Wir erstellen eine Liste mit den Werten in EXAKT dieser Reihenfolge
+    # Wenn ein Feld fehlt, wird einfach ein leerer Text "" eingefügt.
+    spalten = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
+    sortierte_werte = [data.get(col, "") for col in spalten]
     
-    # DataFrame mit fester Reihenfolge erstellen
-    df = pd.DataFrame([ordered_data])
+    # 3. Wir erstellen den DataFrame aus dieser sortierten Liste
+    df = pd.DataFrame([sortierte_werte]) 
     
-    # Tabelle zur Kontrolle in der App anzeigen (hier noch mit Spaltennamen)
+    # Vorschau in der App
+    st.success("Daten extrahiert!")
     st.table(df)
-
-    import io
-    # EXPORT VORBEREITEN
+    
+    # 4. Excel-Export (ohne Überschriften)
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        # header=False entfernt die Überschriften im Excel-File
-        # index=False entfernt die Zeilennummerierung
-        df.to_excel(writer, index=False, header=False, sheet_name='Kontakt')
+        df.to_excel(writer, index=False, header=False)
 
     st.download_button(
-        label="Als Excel herunterladen (nur Daten)",
+        label="Download Excel",
         data=buffer.getvalue(),
-        file_name="visitenkarte.xlsx",
+        file_name="kontakt.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-                
-except Exception as e:
-    st.error("Fehler beim Sortieren der Daten.")
 
-                
 except Exception as e:
-    st.error("Fehler beim Verarbeiten der KI-Antwort. Probiere es nochmal.")
-    st.write(response.text)
+    st.error(f"Fehler: {e}")
+
