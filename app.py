@@ -28,26 +28,35 @@ if uploaded_file:
     if st.button("Karte scannen und zur Liste hinzufügen"):
         with st.spinner('KI analysiert...'):
             prompt = """
-            Extrahiere die Daten von dieser Visitenkarte. 
-            Gib mir NUR ein JSON-Objekt mit genau diesen Schlüsseln zurück: 
+            Analysiere dieses Bild. Es enthält eine oder mehrere Visitenkarten.
+            Extrahiere die Daten von JEDER einzelnen Karte.
+            Gib mir eine LISTE von JSON-Objekten zurück (ein Objekt pro Karte).
+            Jedes Objekt muss diese Schlüssel haben: 
             Firma, Name, Vorname, Abteilung, Adresse, Telefon, Mobiltelefon, Email, URL.
             Falls ein Feld nicht auf der Karte steht, setze den Wert auf null."""
             
-            try:
-                response = model.generate_content([prompt, image])
-                clean_json = response.text.replace('```json', '').replace('```', '').strip()
-                data = json.loads(clean_json)
-                
-                # Daten in der richtigen Reihenfolge als Liste speichern
-                spalten = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
-                neuer_kontakt = [data.get(col, "") for col in spalten]
-                
-                # --- NEU: ZUR LISTE HINZUFÜGEN ---
-                st.session_state.alle_kontakte.append(neuer_kontakt)
-                st.success(f"Kontakt hinzugefügt! (Gesamt: {len(st.session_state.alle_kontakte)})")
-                
-            except Exception as e:
-                st.error(f"Fehler: {e}")
+try:
+    response = model.generate_content([prompt, image])
+    clean_json = response.text.replace('```json', '').replace('```', '').strip()
+    
+    # Jetzt laden wir eine LISTE statt eines einzelnen Objekts
+    daten_liste = json.loads(clean_json) 
+    
+    # Falls die KI nur ein Objekt statt einer Liste schickt, machen wir eine Liste daraus
+    if isinstance(daten_liste, dict):
+        daten_liste = [daten_liste]
+
+    spalten = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
+    
+    for eintrag in daten_liste:
+        sortierte_werte = [eintrag.get(col, "") for col in spalten]
+        st.session_state.alle_kontakte.append(sortierte_werte)
+        
+    st.success(f"{len(daten_liste)} Karte(n) erfolgreich hinzugefügt!")
+
+except Exception as e:
+    st.error(f"Fehler: {e}")
+
 
 # --- NEU: ANZEIGE UND DOWNLOAD ALLER DATEN ---
 if st.session_state.alle_kontakte:
