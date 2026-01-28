@@ -18,7 +18,7 @@ if 'alle_kontakte' not in st.session_state:
 if 'total_tokens' not in st.session_state:
     st.session_state.total_tokens = 0
 
-st.title("📇 Pro Visitenkarten-Scanner")
+st.title(st.image("WFL_OS.JPG", width=30))("Pro Visitenkarten-Scanner")
 
 with st.sidebar:
     
