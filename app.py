@@ -67,22 +67,38 @@ if uploaded_file:
                 st.write("KI-Antwort zur Fehlersuche:", response.text if 'response' in locals() else "Keine Antwort")
 
 # Anzeige der gesammelten Liste
+# --- ANZEIGE UND EINZELNES LÖSCHEN ---
 if st.session_state.alle_kontakte:
     st.divider()
     st.subheader(f"Gesammelte Daten ({len(st.session_state.alle_kontakte)} Einträge)")
+
+    # Wir erstellen Spaltenüberschriften nur für die Anzeige im Web
+    spalten_namen = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
     
+    # Wir loopen durch die Liste und erstellen für jede Zeile einen Lösch-Button
+    for i, eintrag in enumerate(st.session_state.alle_kontakte):
+        cols = st.columns([8, 1]) # Textspalte breit, Buttonspalte schmal
+        with cols[0]:
+            # Zeige die Daten kompakt an
+            st.write(f"**{i+1}.** {eintrag[0]} | {eintrag[1]} {eintrag[2]} | {eintrag[7]}")
+        with cols[1]:
+            # Der Button nutzt den Index 'i' zum Löschen
+            if st.button("🗑️", key=f"delete_{i}"):
+                st.session_state.alle_kontakte.pop(i)
+                st.rerun()
+
+    st.divider()
+
+    # Excel Export (wie gehabt, nimmt alle aktuellen Daten)
     df_gesamt = pd.DataFrame(st.session_state.alle_kontakte)
-    st.table(df_gesamt)
     
     col1, col2 = st.columns(2)
-    
     with col1:
-        if st.button("Liste leeren"):
+        if st.button("Gesamte Liste leeren"):
             st.session_state.alle_kontakte = []
             st.rerun()
             
     with col2:
-        # Excel Export
         buffer = io.BytesIO()
         with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
             df_gesamt.to_excel(writer, index=False, header=False)
