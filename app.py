@@ -92,9 +92,8 @@ if st.session_state.alle_kontakte:
 
     st.markdown("""
     <style>
-    /* Hintergrund für den Data Editor Bereich */
     div[data-testid="stDataEditor"] {
-        background-color: #293133; /* Hier deine Wunschfarbe */
+        background-color: #293133;
         padding: 10px;
         border-radius: 5px;
     }
