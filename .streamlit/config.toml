@@ -2,5 +2,5 @@
 primaryColor = "#FF4B4B"          # Farbe von Buttons und Highlights
 backgroundColor = "#005C84"       # Haupt-Hintergrundfarbe
 secondaryBackgroundColor = "#FFFFFF" # Farbe der Sidebar und Eingabefelder
-textColor = "#31333F"             # Schriftfarbe
-font = "sans serif"               # Schriftart
+textColor = "#FFFFFF"             # Schriftfarbe
+font = "arial"               # Schriftart
