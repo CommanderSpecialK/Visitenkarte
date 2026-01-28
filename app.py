@@ -30,7 +30,7 @@ if uploaded_file:
             response = model.generate_content([prompt, image])
             
 # 1. Definieren der festen Spaltenreihenfolge
-COLUMNS_ORDER = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
+ordered_data = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
 
 try:
     # Säubern der Ausgabe
