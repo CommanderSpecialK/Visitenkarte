@@ -37,36 +37,36 @@ def check_password():
 if check_password():
     st.success("Anmeldung erfolgreich!")
 # 1. Konfiguration & Speicher initialisieren
-if "GEMINI_API_KEY" in st.secrets:
+  if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-else:
+  else:
     st.error("Bitte 'GEMINI_API_KEY' in den Secrets hinterlegen!")
 
-model = genai.GenerativeModel('gemini-2.5-flash-lite')
+  model = genai.GenerativeModel('gemini-2.5-flash-lite')
 
-if 'alle_kontakte' not in st.session_state:
+  if 'alle_kontakte' not in st.session_state:
     st.session_state.alle_kontakte = []
-if 'total_tokens' not in st.session_state:
+  if 'total_tokens' not in st.session_state:
     st.session_state.total_tokens = 0
 
 # Spalten helfen beim Zentrieren (links leer, mitte Logo, rechts leer)
-col1, col2, col3 = st.columns([2, 1, 2]) 
+  col1, col2, col3 = st.columns([2, 1, 2]) 
 
-with col2:
+  with col2:
     st.image("WFL_OS.JPG", use_container_width=True)
 
-st.title("Pro Visitenkarten-Scanner")
+  st.title("Pro Visitenkarten-Scanner")
 
-with st.sidebar:
+  with st.sidebar:
     
     st.image("WFL_OS.JPG", width=80)
     
     st.divider() # Trennlinie unter dem Logo
 
 # 2. Dateiupload
-uploaded_file = st.file_uploader("Bild hochladen", type=['jpg', 'png', 'jpeg'])
+  uploaded_file = st.file_uploader("Bild hochladen", type=['jpg', 'png', 'jpeg'])
 
-if uploaded_file:
+  if uploaded_file:
     image = Image.open(uploaded_file)
     st.image(image, caption='Vorschau', use_container_width=True)
     
@@ -114,7 +114,7 @@ if uploaded_file:
         # --- FORTSCHRITTSANZEIGE ENDE ---
 
 # 3. Interaktiver Editor & Export
-if st.session_state.alle_kontakte:
+  if st.session_state.alle_kontakte:
     st.divider()
     st.subheader(f"Gesammelte Kontakte ({len(st.session_state.alle_kontakte)})")
     
@@ -147,7 +147,7 @@ if st.session_state.alle_kontakte:
         st.download_button("📥 Excel Download", buffer.getvalue(), "visitenkarten_sammlung.xlsx")
 
 # 4. Sidebar Statistik
-with st.sidebar:
+  with st.sidebar:
     st.header("📊 Statistik")
     st.metric("Verbrauchte Tokens", f"{st.session_state.total_tokens:,}")
     if st.button("Reset Stats"):
