@@ -106,18 +106,27 @@ if check_password():
         col_vcf, col_csv, col_del = st.columns(3)
         
         with col_vcf:
-            # Erstellt eine einzelne VCF Datei mit ALLEN Kontakten darin
-            all_vcards = ""
-            for index, row in editiertes_df.iterrows():
-                all_vcards += create_vcard(row) + "\n"
-            
-            st.download_button(
-                label="📇 Outlook Kontakte (.vcf)",
-                data=all_vcards,
-                file_name="kontakte_export.vcf",
-                mime="text/vcard"
-            )
-
+            # Wir stellen sicher, dass wir das aktuell bearbeitete DF nutzen
+            if not editiertes_df.empty:
+                all_vcards = ""
+                
+                # Wir gehen jede einzelne Zeile im Editor durch
+                for _, row in editiertes_df.iterrows():
+                    # Nur wenn Name oder Firma existieren, erstellen wir einen Eintrag
+                    if pd.notna(row['Name']) or pd.notna(row['Firma']):
+                        all_vcards += create_vcard(row) + "\n"
+                
+                if all_vcards:
+                    st.download_button(
+                        label="📇 Outlook Kontakte (.vcf)",
+                        data=all_vcards,
+                        file_name="alle_visitenkarten.vcf",
+                        mime="text/vcard",
+                        use_container_width=True
+                    )
+            else:
+                st.info("Keine Daten zum Exportieren.")
+                
         with col_csv:
             # Falls du trotzdem noch Excel brauchst
             buffer = io.BytesIO()
