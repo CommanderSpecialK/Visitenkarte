@@ -105,7 +105,7 @@ if check_password():
         # Export-Optionen
         col_vcf, col_csv, col_del = st.columns(3)
         
-with col_vcf:
+        with col_vcf:
             if not editiertes_df.empty:
                 # Wir bauen die Datei zusammen
                 vcard_collection = ""
