@@ -4,7 +4,38 @@ from PIL import Image
 import pandas as pd
 import json
 import io
+import streamlit as st
 
+def check_password():
+    """Gibt True zurück, wenn der Benutzer das richtige Passwort eingegeben hat."""
+    def password_entered():
+        """Prüft, ob das eingegebene Passwort korrekt ist."""
+        if st.session_state["password"] == "wflentw": # <--- ÄNDERE DAS PASSWORT HIER
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # Passwort nicht im State speichern
+        else:
+            st.session_state["password_correct"] = False
+
+    if "password_correct" not in st.session_state:
+        # Erster Start: Zeige Eingabefeld
+        st.text_input(
+            "Bitte Passwort eingeben", type="password", on_change=password_entered, key="password"
+        )
+        return False
+    elif not st.session_state["password_correct"]:
+        # Falsches Passwort: Zeige Feld erneut mit Fehlermeldung
+        st.text_input(
+            "Bitte Passwort eingeben", type="password", on_change=password_entered, key="password"
+        )
+        st.error("😕 Passwort falsch.")
+        return False
+    else:
+        # Passwort korrekt
+        return True
+
+# --- AB HIER STARTET DIE EIGENTLICHE APP ---
+if check_password():
+    st.success("Anmeldung erfolgreich!")
 # 1. Konfiguration & Speicher initialisieren
 if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
