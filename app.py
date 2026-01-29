@@ -25,19 +25,19 @@ def check_password():
         return True
 
 def create_vcard(row):
-    """Erstellt einen vCard-String aus einer Datenzeile."""
+    """Erstellt einen vCard-String im Format 2.1 für bessere Outlook-Kompatibilität."""
     vcf = [
         "BEGIN:VCARD",
-        "VERSION:3.0",
-        f"N:{row['Name']};{row['Vorname']};;;",
-        f"FN:{row['Vorname']} {row['Name']}",
-        f"ORG:{row['Firma']}",
-        f"TITLE:{row['Abteilung']}",
-        f"TEL;TYPE=WORK,VOICE:{row['Telefon']}",
-        f"TEL;TYPE=CELL,VOICE:{row['Mobiltelefon']}",
-        f"ADR;TYPE=WORK:;;{row['Adresse']};;;",
-        f"EMAIL;TYPE=PREF,INTERNET:{row['Email']}",
-        f"URL:{row['URL']}",
+        "VERSION:2.1",
+        f"N;CHARSET=UTF-8:{row.get('Name', '')};{row.get('Vorname', '')}",
+        f"FN;CHARSET=UTF-8:{row.get('Vorname', '')} {row.get('Name', '')}",
+        f"ORG;CHARSET=UTF-8:{row.get('Firma', '')}",
+        f"TITLE;CHARSET=UTF-8:{row.get('Abteilung', '')}",
+        f"TEL;WORK;VOICE:{row.get('Telefon', '')}",
+        f"TEL;CELL;VOICE:{row.get('Mobiltelefon', '')}",
+        f"ADR;WORK;CHARSET=UTF-8:;;{row.get('Adresse', '')}",
+        f"EMAIL;PREF;INTERNET:{row.get('Email', '')}",
+        f"URL:{row.get('URL', '')}",
         "END:VCARD"
     ]
     return "\n".join(vcf)
@@ -105,22 +105,20 @@ if check_password():
         # Export-Optionen
         col_vcf, col_csv, col_del = st.columns(3)
         
-        with col_vcf:
-            # Wir stellen sicher, dass wir das aktuell bearbeitete DF nutzen
+with col_vcf:
             if not editiertes_df.empty:
-                all_vcards = ""
-                
-                # Wir gehen jede einzelne Zeile im Editor durch
+                # Wir bauen die Datei zusammen
+                vcard_collection = ""
                 for _, row in editiertes_df.iterrows():
-                    # Nur wenn Name oder Firma existieren, erstellen wir einen Eintrag
-                    if pd.notna(row['Name']) or pd.notna(row['Firma']):
-                        all_vcards += create_vcard(row) + "\n"
+                    # Nur exportieren, wenn zumindest ein Name oder eine Firma da ist
+                    if row.get('Name') or row.get('Firma'):
+                        vcard_collection += create_vcard(row) + "\n\n"
                 
-                if all_vcards:
+                if vcard_collection:
                     st.download_button(
                         label="📇 Outlook Kontakte (.vcf)",
-                        data=all_vcards,
-                        file_name="alle_visitenkarten.vcf",
+                        data=vcard_collection.encode('utf-8'), # UTF-8 Kodierung für Umlaute
+                        file_name="outlook_kontakte.vcf",
                         mime="text/vcard",
                         use_container_width=True
                     )
