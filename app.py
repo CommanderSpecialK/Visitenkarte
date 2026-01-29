@@ -138,7 +138,7 @@ if check_password():
         with col_r:
             buffer = io.BytesIO()
             with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-                editiertes_df.to_excel(writer, index=False)
+                editiertes_df.to_excel(writer, index=False, header=False)
             st.download_button("📥 Excel Download", buffer.getvalue(), "visitenkarten_sammlung.xlsx")
 
     # 4. Sidebar Statistik
