@@ -124,7 +124,34 @@ if check_password():
                     )
             else:
                 st.info("Keine Daten zum Exportieren.")
-                
+        with col_csv:
+            # Wir erstellen ein spezielles DataFrame für den Outlook-Import
+            outlook_df = editiertes_df.copy()
+            
+            # Wir benennen die Spalten EXAKT so um, wie Outlook sie erwartet
+            mapping = {
+                "Vorname": "Vorname",
+                "Name": "Nachname",
+                "Firma": "Firma",
+                "Abteilung": "Abteilung",
+                "Email": "E-Mail-Adresse",
+                "Telefon": "Telefon geschäftlich",
+                "Mobiltelefon": "Mobiltelefon",
+                "Adresse": "Straße geschäftlich",
+                "URL": "Webseite"
+            }
+            outlook_df = outlook_df.rename(columns=mapping)
+
+            # Export als CSV (Wichtig: mit Semikolon trennen für deutsches Outlook)
+            csv_data = outlook_df.to_csv(index=False, sep=';', encoding='utf-16')
+            
+            st.download_button(
+                label="📊 Outlook CSV Import",
+                data=csv_data,
+                file_name="outlook_import.csv",
+                mime="text/csv",
+                use_container_width=True
+            )        
         with col_csv:
             # Falls du trotzdem noch Excel brauchst
             buffer = io.BytesIO()
