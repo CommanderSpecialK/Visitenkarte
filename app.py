@@ -50,7 +50,7 @@ if check_password():
     else:
         st.error("Bitte 'GEMINI_API_KEY' in den Secrets hinterlegen!")
 
-    model = genai.GenerativeModel('gemini-2.0-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash-lite')
 
     if 'alle_kontakte' not in st.session_state:
         st.session_state.alle_kontakte = []
