@@ -8,8 +8,7 @@ import io
 def check_password():
     """Gibt True zurück, wenn der Benutzer das richtige Passwort eingegeben hat."""
     def password_entered():
-        """Prüft, ob das eingegebene Passwort korrekt ist."""
-        if st.session_state["password"] == st.secrets["password"]:
+        if st.session_state["password"] == st.secrets["password"]
             st.session_state["password_correct"] = True
             del st.session_state["password"]  
         else:
@@ -25,11 +24,27 @@ def check_password():
     else:
         return True
 
-# --- AB HIER STARTET DIE EIGENTLICHE APP ---
+def create_vcard(row):
+    """Erstellt einen vCard-String aus einer Datenzeile."""
+    vcf = [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        f"N:{row['Name']};{row['Vorname']};;;",
+        f"FN:{row['Vorname']} {row['Name']}",
+        f"ORG:{row['Firma']}",
+        f"TITLE:{row['Abteilung']}",
+        f"TEL;TYPE=WORK,VOICE:{row['Telefon']}",
+        f"TEL;TYPE=CELL,VOICE:{row['Mobiltelefon']}",
+        f"ADR;TYPE=WORK:;;{row['Adresse']};;;",
+        f"EMAIL;TYPE=PREF,INTERNET:{row['Email']}",
+        f"URL:{row['URL']}",
+        "END:VCARD"
+    ]
+    return "\n".join(vcf)
+
+# --- APP START ---
 if check_password():
-    st.success("Anmeldung erfolgreich!")
-    
-    # 1. Konfiguration & Speicher initialisieren
+    # 1. Konfiguration
     if "GEMINI_API_KEY" in st.secrets:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     else:
@@ -42,24 +57,12 @@ if check_password():
     if 'total_tokens' not in st.session_state:
         st.session_state.total_tokens = 0
 
-    # Spalten helfen beim Zentrieren
     col1, col2, col3 = st.columns([2, 1, 2])  
-
     with col2:
-        # Falls das Logo nicht gefunden wird, fängt dieser Block den Fehler ab
-        try:
-            st.image("WFL_OS.JPG", use_container_width=True)
-        except:
-            st.warning("Logo WFL_OS.JPG nicht gefunden.")
+        try: st.image("WFL_OS.JPG", use_container_width=True)
+        except: pass
 
     st.title("Pro Visitenkarten-Scanner")
-
-    with st.sidebar:
-        try:
-            st.image("WFL_OS.JPG", width=80)
-        except:
-            pass
-        st.divider() 
 
     # 2. Dateiupload
     uploaded_file = st.file_uploader("Bild hochladen", type=['jpg', 'png', 'jpeg'])
@@ -70,81 +73,63 @@ if check_password():
         
         if st.button("🚀 Analyse starten"):
             with st.status("Verarbeite Visitenkarte...", expanded=True) as status:
-                st.write("🔍 Bereite Bilddaten vor...")
-                
                 prompt = """
-                Analysiere dieses Bild. Es enthält eine oder mehrere Visitenkarten.
-                Extrahiere die Daten von JEDER einzelnen erkennbaren Karte.
-                Gib mir NUR eine LISTE von JSON-Objekten zurück.
-                Jedes Objekt muss exakt diese Schlüssel haben: 
+                Analysiere dieses Bild. Extrahiere alle Visitenkartendaten.
+                Gib NUR eine Liste von JSON-Objekten zurück mit:
                 Firma, Name, Vorname, Abteilung, Adresse, Telefon, Mobiltelefon, Email, URL.
-                Falls ein Feld fehlt, setze es auf null.
-                Beispiel-Format: [{"Firma": "A", "Name": "B", ...}, {"Firma": "C", "Name": "D", ...}]
                 """
-                
-                st.write("🤖 KI analysiert den Text...")
                 try:
                     response = model.generate_content([prompt, image])
-                    
-                    # Token-Verbrauch loggen
                     st.session_state.total_tokens += response.usage_metadata.total_token_count
-                    
-                    st.write("📝 Daten werden strukturiert...")
                     clean_json = response.text.replace('```json', '').replace('```', '').strip()
                     extrakt = json.loads(clean_json)
-                    
-                    if isinstance(extrakt, dict):
-                        extrakt = [extrakt]
+                    if isinstance(extrakt, dict): extrakt = [extrakt]
                     
                     spalten = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
-                    
                     for eintrag in extrakt:
-                        sortierte_werte = [eintrag.get(col, "") for col in spalten]
-                        st.session_state.alle_kontakte.append(sortierte_werte)
-                    
+                        # Wir speichern es als Dictionary für den vCard-Generator
+                        st.session_state.alle_kontakte.append(eintrag)
                     status.update(label="✅ Analyse erfolgreich!", state="complete", expanded=False)
-                    
                 except Exception as e:
-                    status.update(label="❌ Fehler aufgetreten", state="error")
-                    st.error(f"Details: {e}")
+                    st.error(f"Fehler: {e}")
 
-    # 3. Interaktiver Editor & Export
+    # 3. Editor & Export
     if st.session_state.alle_kontakte:
         st.divider()
-        st.subheader(f"Gesammelte Kontakte ({len(st.session_state.alle_kontakte)})")
+        st.subheader("Gescannte Kontakte")
         
-        spalten_namen = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
-        df_editor = pd.DataFrame(st.session_state.alle_kontakte, columns=spalten_namen)
-
-        st.markdown("""
-        <style>
-        div[data-testid="stDataEditor"] {
-            background-color: #293133;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-
-        # Editor anzeigen
+        df_editor = pd.DataFrame(st.session_state.alle_kontakte)
         editiertes_df = st.data_editor(df_editor, num_rows="dynamic", use_container_width=True)
-        st.session_state.alle_kontakte = editiertes_df.values.tolist()
+        st.session_state.alle_kontakte = editiertes_df.to_dict('records')
 
-        col_l, col_r = st.columns(2)
-        with col_l:
-            if st.button("🗑️ Liste leeren"):
-                st.session_state.alle_kontakte = []
-                st.rerun()
-        with col_r:
+        # Export-Optionen
+        col_vcf, col_csv, col_del = st.columns(3)
+        
+        with col_vcf:
+            # Erstellt eine einzelne VCF Datei mit ALLEN Kontakten darin
+            all_vcards = ""
+            for index, row in editiertes_df.iterrows():
+                all_vcards += create_vcard(row) + "\n"
+            
+            st.download_button(
+                label="📇 Outlook Kontakte (.vcf)",
+                data=all_vcards,
+                file_name="kontakte_export.vcf",
+                mime="text/vcard"
+            )
+
+        with col_csv:
+            # Falls du trotzdem noch Excel brauchst
             buffer = io.BytesIO()
             with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
                 editiertes_df.to_excel(writer, index=False)
-            st.download_button("📥 Excel Download", buffer.getvalue(), "visitenkarten_sammlung.xlsx")
+            st.download_button("📥 Excel Download", buffer.getvalue(), "kontakte.xlsx")
 
-    # 4. Sidebar Statistik
+        with col_del:
+            if st.button("🗑️ Liste leeren"):
+                st.session_state.alle_kontakte = []
+                st.rerun()
+
     with st.sidebar:
         st.header("📊 Statistik")
         st.metric("Verbrauchte Tokens", f"{st.session_state.total_tokens:,}")
-        if st.button("Reset Stats"):
-            st.session_state.total_tokens = 0
-            st.rerun()
