@@ -125,10 +125,9 @@ if check_password():
             else:
                 st.info("Keine Daten zum Exportieren.")
         with col_csv:
-            # Wir erstellen ein spezielles DataFrame für den Outlook-Import
+            # 1. Kopie erstellen und Spalten für Outlook vorbereiten
             outlook_df = editiertes_df.copy()
             
-            # Wir benennen die Spalten EXAKT so um, wie Outlook sie erwartet
             mapping = {
                 "Vorname": "Vorname",
                 "Name": "Nachname",
@@ -141,17 +140,23 @@ if check_password():
                 "URL": "Webseite"
             }
             outlook_df = outlook_df.rename(columns=mapping)
-
-            # Export als CSV (Wichtig: mit Semikolon trennen für deutsches Outlook)
-            csv_data = outlook_df.to_csv(index=False, sep=';', encoding='utf-16')
             
+            # 2. WICHTIG: Outlook mag keine "NaN" (Not a Number) Werte aus Python
+            outlook_df = outlook_df.fillna("") 
+
+            # 3. Export mit "excel" Dialekt (Semikolon + CP1252 Kodierung)
+            # Das ist der sicherste Weg für deutsche Outlook-Versionen
+            csv_buffer = io.StringIO()
+            outlook_df.to_csv(csv_buffer, index=False, sep=';', encoding='cp1252', errors='replace')
+            csv_output = csv_buffer.getvalue()
+
             st.download_button(
                 label="📊 Outlook CSV Import",
-                data=csv_data,
-                file_name="outlook_import.csv",
+                data=csv_output,
+                file_name="outlook_kontakte.csv",
                 mime="text/csv",
                 use_container_width=True
-            )        
+            ) 
         with col_csv:
             # Falls du trotzdem noch Excel brauchst
             buffer = io.BytesIO()
