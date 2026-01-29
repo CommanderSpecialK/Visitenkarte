@@ -9,7 +9,7 @@ def check_password():
     """Gibt True zurück, wenn der Benutzer das richtige Passwort eingegeben hat."""
     def password_entered():
         """Prüft, ob das eingegebene Passwort korrekt ist."""
-        if st.session_state["password"] == "wflentw": # <--- Passwort
+        if st.session_state["password"] == st.secrets["password"]:
             st.session_state["password_correct"] = True
             del st.session_state["password"]  
         else:
