@@ -64,15 +64,21 @@ if check_password():
                 st.write("🔍 Bereite Bilddaten vor...")
 
                 prompt = """
-                Analysiere dieses Bild. Es enthält eine oder mehrere Visitenkarten.
-                Extrahiere die Daten von JEDER einzelnen erkennbaren Karte.
-                Gib mir NUR eine LISTE von JSON-Objekten zurück.
-                Jedes Objekt muss exakt diese Schlüssel haben:
-                Firma, Name, Vorname, Abteilung, Adresse, Telefon, Mobiltelefon, Email, URL.
-                Falls ein Feld fehlt, setze es auf null.
-                Beispiel-Format: [{"Firma": "A", "Name": "B", ...}]
-                """
+                Analysiere dieses Bild hochpräzise. Es handelt sich um Visitenkarten.
+                
+                SCHRITT-FÜR-SCHRITT-ANWEISUNG:
+                1. Identifiziere alle Textblöcke, auch wenn sie unscharf oder klein sind.
+                2. Nutze Kontextwissen: E-Mail-Adressen verraten oft den Namen (vorname.name@firma.de) oder die Webseite.
+                3. Formatiere Telefonnummern einheitlich (z.B. +49...).
+                4. Falls Text extrem schwer lesbar ist, versuche die wahrscheinlichste Variante zu wählen, statt 'null' zu schreiben.
 
+                AUSGABE-FORMAT:
+                Gib NUR eine LISTE von JSON-Objekten zurück. 
+                Erforderliche Schlüssel: Firma, Name, Vorname, Abteilung, Adresse, Telefon, Mobiltelefon, Email, URL.
+                
+                WICHTIG: Kein Smalltalk, kein Markdown-Code-Block (außer es ist reines JSON).
+                Beispiel: [{"Firma": "Beispiel GmbH", "Name": "Mustermann", ...}]
+                """
                 # Modelle für die Fallback-Schleife
                 model_names = ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-2.0-flash-lite', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest']
                 success = False
