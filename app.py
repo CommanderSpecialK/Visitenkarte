@@ -5,8 +5,6 @@ import pandas as pd
 import json
 import io
 import zipfile
-import google.generativeai as genai
-
 
 def check_password():
     def password_entered():
@@ -31,11 +29,8 @@ if check_password():
 
     if "GEMINI_API_KEY" in st.secrets:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-        
     else:
         st.error("Bitte 'GEMINI_API_KEY' in den Secrets hinterlegen!")
-
-    model = genai.GenerativeModel('models/gemini-2.5-flash-lite')
 
     if 'alle_kontakte' not in st.session_state:
         st.session_state.alle_kontakte = []
@@ -78,27 +73,45 @@ if check_password():
                 Beispiel-Format: [{"Firma": "A", "Name": "B", ...}]
                 """
 
-                try:
-                    response = model.generate_content([prompt, image])
-                    st.session_state.total_tokens += response.usage_metadata.total_token_count
+                # Modelle für die Fallback-Schleife
+                model_names = ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-2.0-flash-lite', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest']
+                success = False
 
-                    clean_json = response.text.replace('```json', '').replace('```', '').strip()
-                    extrakt = json.loads(clean_json)
+                for m_name in model_names:
+                    if success:
+                        break
+                    
+                    try:
+                        st.write(f"🤖 Versuche Modell: {m_name}...")
+                        current_model = genai.GenerativeModel(m_name)
+                        response = current_model.generate_content([prompt, image])
+                        
+                        st.session_state.total_tokens += response.usage_metadata.total_token_count
 
-                    if isinstance(extrakt, dict):
-                        extrakt = [extrakt]
+                        clean_json = response.text.replace('```json', '').replace('```', '').strip()
+                        extrakt = json.loads(clean_json)
 
-                    spalten = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
+                        if isinstance(extrakt, dict):
+                            extrakt = [extrakt]
 
-                    for eintrag in extrakt:
-                        sortierte_werte = [eintrag.get(col, "") or "" for col in spalten]
-                        st.session_state.alle_kontakte.append(sortierte_werte)
+                        spalten = ["Firma", "Name", "Vorname", "Abteilung", "Adresse", "Telefon", "Mobiltelefon", "Email", "URL"]
 
-                    status.update(label="✅ Analyse erfolgreich!", state="complete", expanded=False)
+                        for eintrag in extrakt:
+                            sortierte_werte = [eintrag.get(col, "") or "" for col in spalten]
+                            st.session_state.alle_kontakte.append(sortierte_werte)
 
-                except Exception as e:
-                    status.update(label="❌ Fehler aufgetreten", state="error")
-                    st.error(f"Details: {e}")
+                        success = True
+                        status.update(label=f"✅ Erfolg mit {m_name}!", state="complete", expanded=False)
+
+                    except Exception as e:
+                        if "429" in str(e):
+                            st.warning(f"⚠️ Limit bei {m_name} erreicht. Versuche nächstes...")
+                        else:
+                            st.error(f"❌ Fehler bei {m_name}: {e}")
+                
+                if not success:
+                    status.update(label="❌ Alle Modelle fehlgeschlagen", state="error")
+                    st.error("Leider haben alle verfügbaren Modelle ihr Limit erreicht.")
 
     if st.session_state.alle_kontakte:
         st.divider()
