@@ -31,10 +31,12 @@ if check_password():
 
     if "GEMINI_API_KEY" in st.secrets:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-        st.write("Available models:")
-for m in genai.list_models():
-    if 'generateContent' in m.supported_generation_methods:
-        st.write(m.name)
+        st.subheader("Verfügbare Modelle für diesen Key:")
+        try:
+        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        st.write(available_models)
+        except Exception as e:
+        st.error(f"Fehler beim Abrufen der Modelle: {e}")
     else:
         st.error("Bitte 'GEMINI_API_KEY' in den Secrets hinterlegen!")
 
