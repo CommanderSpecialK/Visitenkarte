@@ -5,6 +5,8 @@ import pandas as pd
 import json
 import io
 import zipfile
+import google.generativeai as genai
+
 
 def check_password():
     def password_entered():
@@ -29,6 +31,10 @@ if check_password():
 
     if "GEMINI_API_KEY" in st.secrets:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+        st.write("Available models:")
+for m in genai.list_models():
+    if 'generateContent' in m.supported_generation_methods:
+        st.write(m.name)
     else:
         st.error("Bitte 'GEMINI_API_KEY' in den Secrets hinterlegen!")
 
