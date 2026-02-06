@@ -64,7 +64,7 @@ if check_password():
                 st.write("🔍 Bereite Bilddaten vor...")
 
                 prompt = """
-                Analysiere dieses Bild hochpräzise. Es handelt sich um Visitenkarten.
+                Analysiere dieses Bild. Es handelt sich um Visitenkarten.
                 
                 SCHRITT-FÜR-SCHRITT-ANWEISUNG:
                 1. Identifiziere alle Textblöcke, auch wenn sie unscharf oder klein sind.
@@ -88,7 +88,8 @@ if check_password():
                         break
                     
                     try:
-                        st.write(f"🤖 Versuche Modell: {m_name}...")
+                        st.write(f"🤖 Analysiere...")
+                        #st.write(f"🤖 Versuche Modell: {m_name}...")
                         current_model = genai.GenerativeModel(m_name)
                         response = current_model.generate_content([prompt, image])
                         
@@ -107,17 +108,22 @@ if check_password():
                             st.session_state.alle_kontakte.append(sortierte_werte)
 
                         success = True
-                        status.update(label=f"✅ Erfolg mit {m_name}!", state="complete", expanded=False)
+                        status.update(label=f"✅ Erfolgreich analysiert!", state="complete", expanded=False)
+                        #status.update(label=f"✅ Erfolg mit {m_name}!", state="complete", expanded=False)
 
                     except Exception as e:
                         if "429" in str(e):
-                            st.warning(f"⚠️ Limit bei {m_name} erreicht. Versuche nächstes...")
+                            st.warning(f"⚠️ Problem erkannt. Wiederhole...")
+                            #st.warning(f"⚠️ Limit bei {m_name} erreicht. Versuche nächstes...")
                         else:
-                            st.error(f"❌ Fehler bei {m_name}: {e}")
+                            st.error(f"❌ Fehler: {e}")
+                            #st.error(f"❌ Fehler bei {m_name}: {e}")
                 
                 if not success:
-                    status.update(label="❌ Alle Modelle fehlgeschlagen", state="error")
-                    st.error("Leider haben alle verfügbaren Modelle ihr Limit erreicht.")
+                    status.update(label="❌ Fehlgeschlagen. Bitte neu starten!", state="error")
+                    #status.update(label="❌ Alle Modelle fehlgeschlagen", state="error")
+                    st.error("Bitte neu starten!")
+                    #st.error("Leider haben alle verfügbaren Modelle ihr Limit erreicht.")
 
     if st.session_state.alle_kontakte:
         st.divider()
